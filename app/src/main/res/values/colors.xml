@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#40394A</color>
+    <color name="colorPrimaryDark">#40394A</color>
+    <color name="colorAccent">#40394A</color>
+    <color name="body">#FFFFFFFF</color>
+    <color name="primary">#40394A</color>
+    <color name="primary_light">#FFFFFFFF</color>
+    <color name="primary_dark">#40394A</color>
+    <color name="primary_text">#1C1427</color>
+    <color name="secondary_text">#CCFFBD</color>
+    <color name="input_background">#EBECF1</color>
+    <color name="icon_background">#20FFFFFF</color>
+    <color name="error">#B00020</color>
+    <color name="recieved_message_background">#090D16</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
