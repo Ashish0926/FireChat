@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FireChat">
         <activity
+            android:name=".activities.ChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.UserActivity"
             android:exported="false" />
         <activity
@@ -28,7 +31,7 @@
         </activity>
         <activity
             android:name=".activities.MainActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
 
         <service
             android:name=".firebase.MessagingService"
