@@ -43,7 +43,7 @@ class SignInActivity : AppCompatActivity() {
     private fun signIn() {
         loading(true)
         val db = Firebase.firestore
-        db.collection(Constants.KEY_COLLLECTION_USERS)
+        db.collection(Constants.KEY_COLLECTION_USERS)
             .whereEqualTo(Constants.KEY_EMAIL, binding.inputEmail.text.toString())
             .whereEqualTo(Constants.KEY_PASSWORD, binding.inputPassword.text.toString())
             .get()

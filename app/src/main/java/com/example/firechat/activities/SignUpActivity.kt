@@ -62,7 +62,7 @@ class SignUpActivity : AppCompatActivity() {
         user[Constants.KEY_EMAIL] = binding.inputEmail.text.toString()
         user[Constants.KEY_PASSWORD] = binding.inputPassword.text.toString()
         user[Constants.KEY_IMAGE] = encodedImage!!
-        db.collection(Constants.KEY_COLLLECTION_USERS)
+        db.collection(Constants.KEY_COLLECTION_USERS)
             .add(user)
             .addOnSuccessListener {
                 loading(false)

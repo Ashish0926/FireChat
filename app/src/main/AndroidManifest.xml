@@ -13,7 +13,8 @@
         android:theme="@style/Theme.FireChat">
         <activity
             android:name=".activities.ChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".activities.UserActivity"
             android:exported="false" />

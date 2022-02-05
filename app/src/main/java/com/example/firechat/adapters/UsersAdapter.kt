@@ -7,9 +7,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firechat.databinding.ItemContainerUserBinding
+import com.example.firechat.listeners.UserListener
 import com.example.firechat.models.User
 
-class UsersAdapter(private val users: List<User>): RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
+class UsersAdapter(private val users: List<User>, private val userListener: UserListener): RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -33,6 +34,9 @@ class UsersAdapter(private val users: List<User>): RecyclerView.Adapter<UsersAda
             binding.textName.text = user.name
             binding.textEmail.text = user.email
             binding.imageProfile.setImageBitmap(getUserImage(user.image))
+            binding.root.setOnClickListener {
+                userListener.onUserClicked(user)
+            }
         }
     }
 

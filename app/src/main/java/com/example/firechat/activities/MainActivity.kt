@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
     
     private fun updateToken(token: String) {
         val db = Firebase.firestore
-        val documentReference = db.collection(Constants.KEY_COLLLECTION_USERS)
+        val documentReference = db.collection(Constants.KEY_COLLECTION_USERS)
             .document(preferencesManager.getString(Constants.KEY_USER_ID)!!)
         documentReference.update(Constants.KEY_FCM_TOKEN, token)
 //            .addOnSuccessListener {
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     private fun signOut() {
         showToast("Signing out...")
         val db = Firebase.firestore
-        val documentReference = db.collection(Constants.KEY_COLLLECTION_USERS)
+        val documentReference = db.collection(Constants.KEY_COLLECTION_USERS)
             .document(preferencesManager.getString(Constants.KEY_USER_ID)!!)
         val updates = HashMap<String, Any>()
         updates[Constants.KEY_FCM_TOKEN] = FieldValue.delete()
