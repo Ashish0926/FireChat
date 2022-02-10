@@ -8,7 +8,7 @@
     <color name="primary_light">#FFFFFFFF</color>
     <color name="primary_dark">#2F2134</color>
     <color name="primary_text">#1C1427</color>
-    <color name="secondary_text">#20FFFFFF</color>
+    <color name="secondary_text">#696969</color>
     <color name="input_background">#EBECF1</color>
     <color name="icon_background">#20FFFFFF</color>
     <color name="error">#B00020</color>

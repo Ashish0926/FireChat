@@ -23,6 +23,7 @@ class ChatAdapter(private val chatMessages: List<ChatMessage>, private val sende
         fun setData(chatMessage: ChatMessage) {
             binding.textMessage.text = chatMessage.message
             binding.textDateTime.text = chatMessage.dateTime
+            //Log.w("date", chatMessage.dateTime.toString())
         }
     }
 
