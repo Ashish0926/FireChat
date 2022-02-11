@@ -5,7 +5,10 @@ import java.util.*
 data class ChatMessage (
     val senderId: String,
     val receiverId: String,
-    val message: String,
+    var message: String,
     val dateTime: String?,
-    val dateObject: Date
+    var dateObject: Date,
+    var conversionId: String? = null,
+    var conversionName: String? = null,
+    var conversionImage: String? = null
 )

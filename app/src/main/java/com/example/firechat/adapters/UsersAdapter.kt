@@ -45,6 +45,4 @@ class UsersAdapter(private val users: List<User>, private val userListener: User
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
-
-
 }

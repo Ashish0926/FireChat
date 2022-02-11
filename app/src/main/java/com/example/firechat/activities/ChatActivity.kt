@@ -28,6 +28,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var db: FirebaseFirestore
+    private var conversionId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +59,20 @@ class ChatActivity : AppCompatActivity() {
         message[Constants.KEY_MESSAGE] = binding.inputMessage.text.toString()
         message[Constants.KEY_TIMESTAMP] = Date()
         db.collection(Constants.KEY_COLLECTION_CHAT).add(message)
+        if(conversionId != null){
+            updateConversion(binding.inputMessage.text.toString())
+        }else{
+            val conversion = HashMap<String, Any>()
+            conversion[Constants.KEY_SENDER_ID] = preferenceManager.getString(Constants.KEY_USER_ID).toString()
+            conversion[Constants.KEY_SENDER_NAME] = preferenceManager.getString(Constants.KEY_NAME).toString()
+            conversion[Constants.KEY_SENDER_IMAGE] = preferenceManager.getString(Constants.KEY_IMAGE).toString()
+            conversion[Constants.KEY_RECEIVER_ID] = receiverUser.id
+            conversion[Constants.KEY_RECEIVER_NAME] = receiverUser.name
+            conversion[Constants.KEY_RECEIVER_IMAGE] = receiverUser.image
+            conversion[Constants.KEY_LAST_MESSAGE] = binding.inputMessage.text.toString()
+            conversion[Constants.KEY_TIMESTAMP] = Date()
+            addConversion(conversion)
+        }
         binding.inputMessage.text = null
     }
 
@@ -68,23 +83,12 @@ class ChatActivity : AppCompatActivity() {
             .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.id)
             .addSnapshotListener {snapshot, error ->
                 if(error != null){
-                    //Log.w("snapshotError", "listen:error")
                     return@addSnapshotListener
                 }
                 if(snapshot != null) {
-                    //Log.w("snapshot", "successful")
                     val count = chatMessages.size
                     for(documentChange in snapshot.documentChanges) {
                         if(documentChange.type == DocumentChange.Type.ADDED){
-
-//                            val a = documentChange.document.getString(Constants.KEY_SENDER_ID).toString()
-//                            val b = documentChange.document.getString(Constants.KEY_RECEIVER_ID).toString()
-//                            val c = documentChange.document.getString(Constants.KEY_MESSAGE).toString()
-//                            val d = getReadableDateTime(documentChange.document.getDate(Constants.KEY_TIMESTAMP)!!)
-//                            //val e = documentChange.document.getDate(Constants.KEY_TIMESTAMP)!!
-//
-//                            Log.w("chat", a + " " + b +" "+ c + " " + d)
-
                             val chatMessage = ChatMessage(
                                 documentChange.document.getString(Constants.KEY_SENDER_ID).toString(),
                                 documentChange.document.getString(Constants.KEY_RECEIVER_ID).toString(),
@@ -98,7 +102,6 @@ class ChatActivity : AppCompatActivity() {
                     chatMessages.sortWith { obj1, obj2 ->
                         obj1.dateObject.compareTo(obj2.dateObject)
                     }
-                    //Log.w("chatMessage", chatMessages.size.toString())
                     if(count == 0){
                         chatAdapter.notifyDataSetChanged()
                     }else{
@@ -108,6 +111,9 @@ class ChatActivity : AppCompatActivity() {
                     binding.chatRecyclerView.visibility = View.VISIBLE
                 }
                 binding.progressBar.visibility = View.GONE
+                if(conversionId == null) {
+                    checkForConversion()
+                }
             }
 
         db.collection(Constants.KEY_COLLECTION_CHAT)
@@ -143,6 +149,9 @@ class ChatActivity : AppCompatActivity() {
                     binding.chatRecyclerView.visibility = View.VISIBLE
                 }
                 binding.progressBar.visibility = View.GONE
+                if(conversionId == null) {
+                    checkForConversion()
+                }
             }
     }
 
@@ -168,5 +177,48 @@ class ChatActivity : AppCompatActivity() {
 
     private fun getReadableDateTime(date: Date): String {
         return SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault()).format(date)
+    }
+
+    private fun addConversion(conversion: HashMap<String, Any>){
+        db.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+            .add(conversion)
+            .addOnSuccessListener {
+                conversionId = it.id
+            }
+    }
+
+    private fun updateConversion(message: String) {
+        val documentReference = db.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+            .document(conversionId.toString())
+        documentReference.update(
+            Constants.KEY_LAST_MESSAGE, message,
+            Constants.KEY_TIMESTAMP, Date()
+        )
+    }
+
+    private fun checkForConversion() {
+        if(chatMessages.size != 0) {
+            checkForConversionRemotely(
+                preferenceManager.getString(Constants.KEY_USER_ID).toString(),
+                receiverUser.id
+            )
+            checkForConversionRemotely(
+                receiverUser.id,
+                preferenceManager.getString(Constants.KEY_USER_ID).toString()
+            )
+        }
+    }
+
+    private fun checkForConversionRemotely(senderId: String, receiverId: String) {
+        db.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+            .whereEqualTo(Constants.KEY_SENDER_ID, senderId)
+            .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverId)
+            .get()
+            .addOnCompleteListener {
+                if(it.isSuccessful && it.result != null && it.result!!.documents.size > 0) {
+                    val documentSnapshot = it.result!!.documents[0]
+                    conversionId = documentSnapshot.id
+                }
+            }
     }
 }
