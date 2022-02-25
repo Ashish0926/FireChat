@@ -3,7 +3,6 @@ package com.example.firechat.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.BitmapFactory
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Base64
 import android.view.View
@@ -22,7 +21,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 
-class MainActivity : AppCompatActivity(), ConversionListener {
+class MainActivity : BaseActivity(), ConversionListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var preferencesManager: PreferenceManager
     private lateinit var conversations: ArrayList<ChatMessage>
@@ -196,6 +195,7 @@ class MainActivity : AppCompatActivity(), ConversionListener {
     }
     
     private fun updateToken(token: String) {
+        preferencesManager.putString(Constants.KEY_FCM_TOKEN, token)
         val db = Firebase.firestore
         val documentReference = db.collection(Constants.KEY_COLLECTION_USERS)
             .document(preferencesManager.getString(Constants.KEY_USER_ID)!!)

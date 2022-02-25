@@ -33,7 +33,7 @@ class UsersAdapter(private val users: List<User>, private val userListener: User
         fun setUserData(user: User){
             binding.textName.text = user.name
             binding.textEmail.text = user.email
-            binding.imageProfile.setImageBitmap(getUserImage(user.image))
+            binding.imageProfile.setImageBitmap(getUserImage(user.image!!))
             binding.root.setOnClickListener {
                 userListener.onUserClicked(user)
             }

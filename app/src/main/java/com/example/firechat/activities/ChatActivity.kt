@@ -6,22 +6,29 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
 import com.example.firechat.adapters.ChatAdapter
 import com.example.firechat.databinding.ActivityChatBinding
 import com.example.firechat.models.ChatMessage
 import com.example.firechat.models.User
+import com.example.firechat.network.ApiClient
+import com.example.firechat.network.ApiService
 import com.example.firechat.utilities.Constants.Constants
 import com.example.firechat.utilities.PreferenceManager
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class ChatActivity : AppCompatActivity() {
+class ChatActivity : BaseActivity() {
     private lateinit var binding: ActivityChatBinding
     private lateinit var receiverUser: User
     private lateinit var chatMessages: ArrayList<ChatMessage>
@@ -29,6 +36,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var db: FirebaseFirestore
     private var conversionId: String? = null
+    private var isReceiverAvailable: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,13 +54,16 @@ class ChatActivity : AppCompatActivity() {
         chatAdapter = ChatAdapter(
             chatMessages,
             preferenceManager.getString(Constants.KEY_USER_ID).toString(),
-            getBitmapFromEncodedString(receiverUser.image)
+            getBitmapFromEncodedString(receiverUser.image!!)
         )
         binding.chatRecyclerView.adapter = chatAdapter
         db = Firebase.firestore
     }
 
     private fun sendMessage() {
+        if(binding.inputMessage.text.toString().trim().isEmpty()){
+            return
+        }
         val message = HashMap<String, Any>()
         message[Constants.KEY_SENDER_ID] = preferenceManager.getString(Constants.KEY_USER_ID).toString()
         message[Constants.KEY_RECEIVER_ID] = receiverUser.id
@@ -68,12 +79,93 @@ class ChatActivity : AppCompatActivity() {
             conversion[Constants.KEY_SENDER_IMAGE] = preferenceManager.getString(Constants.KEY_IMAGE).toString()
             conversion[Constants.KEY_RECEIVER_ID] = receiverUser.id
             conversion[Constants.KEY_RECEIVER_NAME] = receiverUser.name
-            conversion[Constants.KEY_RECEIVER_IMAGE] = receiverUser.image
+            conversion[Constants.KEY_RECEIVER_IMAGE] = receiverUser.image!!
             conversion[Constants.KEY_LAST_MESSAGE] = binding.inputMessage.text.toString()
             conversion[Constants.KEY_TIMESTAMP] = Date()
             addConversion(conversion)
         }
+        if(!isReceiverAvailable) {
+            try {
+                val tokens = JSONArray()
+                tokens.put(receiverUser.token)
+
+                val data = JSONObject()
+                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME))
+                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN))
+                data.put(Constants.KEY_MESSAGE, binding.inputMessage.text.toString())
+
+                val body = JSONObject()
+                body.put(Constants.REMOTE_MSG_DATA, data)
+                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens)
+
+                sendNotification(body.toString())
+            } catch(e: Exception) {
+                showToast(e.message.toString())
+            }
+        }
         binding.inputMessage.text = null
+    }
+
+    private fun showToast(message: String){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun sendNotification(messageBody: String) {
+        ApiClient.getClient().create(ApiService::class.java).sendMessage(
+            Constants.getRemoteMsgHeaders(),
+            messageBody
+        ).enqueue(object: retrofit2.Callback<String>{
+            override fun onResponse(call: Call<String>, response: Response<String>) {
+                if(response.isSuccessful) {
+                    try {
+                        if(response.body() != null){
+                            val responseJson = JSONObject(response.body()!!)
+                            val results = responseJson.getJSONArray("results")
+                            if(responseJson.getInt("failure") == 1){
+                                val error = results[0] as JSONObject
+                                showToast(error.getString("error"))
+                                return
+                            }
+                        }
+                    } catch(e: JSONException) {
+                        e.printStackTrace()
+                    }
+                    showToast("Notification sent successfullly")
+                } else {
+                    showToast("Error " + response.code())
+                }
+            }
+
+            override fun onFailure(call: Call<String>, t: Throwable) {
+                showToast(t.message.toString())
+            }
+        })
+    }
+
+    private fun listenAvailabilityOfReceiver() {
+        db.collection(Constants.KEY_COLLECTION_USERS)
+            .document(receiverUser.id)
+            .addSnapshotListener {
+                value, error ->
+                if(error != null){
+                    return@addSnapshotListener
+                }
+                if(value != null){
+                    if(value.getLong(Constants.KEY_AVAILABILITY) != null) {
+                        val availability = Objects.requireNonNull(
+                            value.getLong(Constants.KEY_AVAILABILITY)
+                        )?.toInt()
+                        isReceiverAvailable = availability == 1
+                    }
+                    receiverUser.token = value.getString(Constants.KEY_FCM_TOKEN)
+                }
+                if(isReceiverAvailable){
+                    binding.textAvailability.visibility = View.VISIBLE
+                }else{
+                    binding.textAvailability.visibility = View.GONE
+                }
+            }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -221,4 +313,10 @@ class ChatActivity : AppCompatActivity() {
                 }
             }
     }
+
+    override fun onResume() {
+        super.onResume()
+        listenAvailabilityOfReceiver()
+    }
 }
+

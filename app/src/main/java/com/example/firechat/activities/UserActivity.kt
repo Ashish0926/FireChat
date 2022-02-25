@@ -3,7 +3,6 @@ package com.example.firechat.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import com.example.firechat.adapters.UsersAdapter
 import com.example.firechat.databinding.ActivityUserBinding
 import com.example.firechat.listeners.UserListener
@@ -13,7 +12,7 @@ import com.example.firechat.utilities.PreferenceManager
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-class UserActivity : AppCompatActivity(), UserListener {
+class UserActivity : BaseActivity(), UserListener {
 
     private lateinit var binding: ActivityUserBinding
     private lateinit var preferenceManager: PreferenceManager
