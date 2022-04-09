@@ -1,5 +1,5 @@
 # FireChat
-A realtime chat application powered by firebase cloudstore
+A realtime chat application powered by firebase cloudstore.
 
 ## Technology used
 * Android Studio
