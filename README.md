@@ -1,6 +1,15 @@
 # FireChat
 A realtime chat application powered by firebase cloudstore
 
+## Technology used
+* Android Studio
+* Kotlin
+* XML
+* Firebase Cloudstore Database
+* Firebase Cloud Messaging
+* Retrofit
+* Recycler View
+
 ## Screenshots
 
 <img src="https://user-images.githubusercontent.com/55145996/160738368-bbf3eae9-55d5-4f50-8989-c7987db748d9.jpeg" width="210" height="400">  <img src="https://user-images.githubusercontent.com/55145996/160738328-a78c9487-5d1b-44cb-a0cf-e247b6531bf4.jpeg" width="210" height="400">  <img src="https://user-images.githubusercontent.com/55145996/160738362-a7bc2cf3-9084-4413-9539-f720c68e92cf.jpeg" width="210" height="400"> <br>
